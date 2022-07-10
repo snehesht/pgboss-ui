@@ -5,11 +5,11 @@ Dashboard for [pg-boss](https://github.com/timgit/pg-boss)
 ### Environment Variables
 
 ```
-PGBOSS_DATABASE_URL=postgres://postgres:password@localhost:5432/outlet_pgboss
-DISABLE_AUTH=false
-AUTH_USERNAME=admin
-AUTH_PASSWORD=admin
-JWT_SECRET=F5bK140uD1st3cKBSYuVg5VujUV1brr7
+PGBOSS_DATABASE_URL=
+DISABLE_AUTH=
+AUTH_USERNAME=
+AUTH_PASSWORD=
+JWT_SECRET=
 ```
 
 ### Usage
@@ -22,4 +22,7 @@ npm install -g nx
 
 # Run PgBoss Dashboard and WebSocket server
 nx run-many --target serve --all
+
+
+# Open http://localhost:4200 in the browser
 ```
