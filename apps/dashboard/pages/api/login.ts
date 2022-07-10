@@ -18,8 +18,8 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
     }
     const { username, password } = req.body;
     if (
-      username === process.env.USERNAME &&
-      password === process.env.PASSWORD
+      username === process.env.AUTH_USERNAME &&
+      password === process.env.AUTH_PASSWORD
     ) {
       const cookieMaxAge = 24 * 60 * 60 * 1000;
       const cookieExpires = new Date(Date.now() + cookieMaxAge);

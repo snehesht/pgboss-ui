@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react';
 import {
-  CalendarIcon,
-  LocationMarkerIcon,
-  UsersIcon,
-} from '@heroicons/react/solid';
-import {
   CheckCircleIcon,
   MinusCircleIcon,
   XCircleIcon,
@@ -16,6 +11,7 @@ import {
   CollectionIcon,
 } from '@heroicons/react/solid';
 import Layout from '../../components/layout';
+import JobItemDetails from '../../components/job-item-details';
 import {
   ClockIcon,
   DocumentIcon,
@@ -25,18 +21,29 @@ import {
   SwitchVerticalIcon,
   TicketIcon,
   XIcon,
+  ArchiveIcon,
 } from '@heroicons/react/outline';
 
 type Job = {
   id: string;
   name: string;
-  state: string;
+  priority: number;
   data: Object;
-  createdon: number;
-  singletonkey: string | null;
-  startedon: number;
-  completedon: number;
+  state: string;
+  retrylimit: number;
+  retrycount: number;
+  retrydelay: number;
+  retrybackoff: boolean;
   startafter: number;
+  startedon: number;
+  singletonkey: string;
+  singletonon: unknown;
+  expirein: number;
+  createdon: number;
+  completedon: number;
+  keepuntil: number;
+  on_complete: boolean;
+  output: unknown;
 };
 
 /* eslint-disable-next-line */
@@ -185,69 +192,76 @@ function renderState(state: string) {
 }
 
 function JobItem(props: { job: Job }) {
+  const [open, setOpen] = useState(false);
   const { job } = props;
+  const handleClick = () => {
+    setOpen(!open);
+  };
   return (
-    <li key={job.id} className="border-1">
-      <a href="#" className="block hover:bg-gray-50">
-        <div className="px-4 py-4 sm:px-6">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-indigo-600 truncate">
-              {job.name}
-            </p>
-            <div className="ml-2 flex-shrink-0 flex">
-              {job.singletonkey !== null ? (
-                <span className="ml-2 mr-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
-                  SINGLETON
-                </span>
-              ) : null}
-              {job.startafter && job.startafter !== job.createdon ? (
-                <span className="ml-1 mr-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-cyan-100 text-cyan-800">
-                  DELAYED
-                </span>
-              ) : null}
-              {renderState(job.state)}
+    <>
+      <li key={job.id} className="border-1" onClick={handleClick}>
+        <a href="#" className="block hover:bg-gray-50">
+          <div className="px-4 py-4 sm:px-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-indigo-600 truncate">
+                {job.name}
+              </p>
+              <div className="ml-2 flex-shrink-0 flex">
+                {job.singletonkey !== null ? (
+                  <span className="ml-2 mr-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                    SINGLETON
+                  </span>
+                ) : null}
+                {job.startafter && job.startafter !== job.createdon ? (
+                  <span className="ml-1 mr-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-cyan-100 text-cyan-800">
+                    DELAYED
+                  </span>
+                ) : null}
+                {renderState(job.state)}
+              </div>
             </div>
-          </div>
-          <div className="mt-2 sm:flex sm:justify-between">
-            <div className="sm:flex">
-              <p
-                key={`${job.id}_date`}
-                className="flex items-center text-xs text-gray-500 pr-4"
-              >
-                <ClockIcon
+            <div className="mt-2 sm:flex sm:justify-between">
+              <div className="sm:flex">
+                <p
+                  key={`${job.id}_date`}
+                  className="flex items-center text-xs text-gray-500 pr-4"
+                >
+                  <ClockIcon
+                    className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400"
+                    aria-hidden="true"
+                  />
+                  {new Date(job.createdon).toISOString()}
+                </p>
+                <p
+                  key={`${job.id}_name`}
+                  className="flex items-center text-xs text-gray-500"
+                >
+                  <TicketIcon
+                    className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400"
+                    aria-hidden="true"
+                  />
+                  {job.id}
+                </p>
+              </div>
+              <div className="mt-2 flex items-center text-xs text-gray-500 sm:mt-0">
+                <ArchiveIcon
                   className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400"
                   aria-hidden="true"
                 />
-                {new Date(job.createdon).toISOString()}
-              </p>
-              <p
-                key={`${job.id}_name`}
-                className="flex items-center text-xs text-gray-500"
-              >
-                <TicketIcon
-                  className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400"
-                  aria-hidden="true"
-                />
-                {job.id}
-              </p>
-            </div>
-            <div className="mt-2 flex items-center text-xs text-gray-500 sm:mt-0">
-              <RefreshIcon
-                className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400"
-                aria-hidden="true"
-              />
-              <p>
-                <time>{getDate(job)}</time>
-              </p>
+                <p>
+                  <time>{getDate(job)}</time>
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </a>
-    </li>
+        </a>
+      </li>
+      {open ? <JobItemDetails job={job} /> : null}
+    </>
   );
 }
 
-export function Archive(props: JobsProps) {
+export function Jobs(props: JobsProps) {
   // const pageSize = 10;
   const [queryCount, setQueryCount] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -336,14 +350,14 @@ export function Archive(props: JobsProps) {
                 Archived Jobs
               </h1>
               <p className="text-sm py-2 text-gray-500">
-                List of all archived jobs in the database{' '}
+                List of all the pgboss jobs in the database{' '}
                 <code className="text-xs px-2 py-2 bg-red-50 text-red-500 rounded-md">
                   pgboss.archive
                 </code>
               </p>
             </div>
             <div className="flex max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 text-end align-middle justify-end">
-              <label className="relative inline-block ml-2 mr-2">
+              <label className="relative inline-block ml-2 mr-2 max-w-sm md:w-96">
                 <span className="sr-only">Search</span>
                 <span className="absolute inset-y-0 left-0 flex items-center pl-2">
                   <svg
@@ -352,11 +366,11 @@ export function Archive(props: JobsProps) {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    stroke-width="2"
+                    strokeWidth="2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
@@ -378,11 +392,11 @@ export function Archive(props: JobsProps) {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    stroke-width="2"
+                    strokeWidth="2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"
                     />
                   </svg>
@@ -414,11 +428,11 @@ export function Archive(props: JobsProps) {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    stroke-width="2"
+                    strokeWidth="2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M8 9l4-4 4 4m0 6l-4 4-4-4"
                     />
                   </svg>
@@ -453,10 +467,11 @@ export function Archive(props: JobsProps) {
               <div className="bg-white shadow-lg overflow-hidden sm:rounded-md">
                 <ul role="list" className="divide-y-8 divide-gray-50">
                   {jobs.length > 0 ? (
-                    jobs.map((job) => <JobItem job={job} />)
+                    jobs.map((job) => <JobItem job={job} key={job.id} />)
                   ) : (
                     <span className="inline-block px-4 py-6 mt-1 w-full text-center text-gray-500">
-                      No Archived jobs found
+                      No Jobs found, please check <strong>Archive</strong> for
+                      archived jobs
                     </span>
                   )}
                 </ul>
@@ -484,4 +499,4 @@ export function Archive(props: JobsProps) {
   );
 }
 
-export default Archive;
+export default Jobs;

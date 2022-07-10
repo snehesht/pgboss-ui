@@ -3,14 +3,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   try {
-    res.setHeader('Content-Type', 'application/json');
-
-    if (req.method !== 'POST') {
-      return res.status(405).end(`Method ${req.method} not allowed`);
-    }
-
-    const cookieMaxAge = 86400;
-    const cookieExpires = new Date(Date.now() + cookieMaxAge);
     res.setHeader(
       'Set-Cookie',
       cookie.serialize('token', '', {
@@ -18,11 +10,10 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         sameSite: true,
         secure: false,
         path: '/',
-        expires: cookieExpires,
-        maxAge: cookieMaxAge,
+        maxAge: -1,
       })
     );
-    return res.status(200).end();
+    return res.status(200).redirect('/');
   } catch (error) {
     return res.status(500).send(error.message);
   }

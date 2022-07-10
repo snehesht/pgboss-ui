@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAllJobs } from '../../lib/database';
-import { JobStatusEnum } from '../../lib/database.types';
+import { database } from '../../lib/database';
+import { JobStatusEnum } from '@pgbossui/database';
 
 type Data = {
   fields?: string[];
@@ -21,7 +21,12 @@ export default async function handler(
   const offset = parseInt(req.body.offset) || 0;
   const limit = parseInt(req.body.limit) || 20;
   try {
-    const { fields, data } = await getAllJobs(offset, limit, state, search);
+    const { fields, data } = await database.getAllJobs(
+      offset,
+      limit,
+      state,
+      search
+    );
     res.status(200).json({ fields, data });
   } catch (error) {
     res.status(500).json({ error: error.message });

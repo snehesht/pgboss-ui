@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAllArchivedJobs } from '../../lib/database';
-import { JobStatusEnum } from '../../lib/database.types';
+import { JobStatusEnum } from '@pgbossui/database';
+import { database } from '../../lib/database';
 
 type Data = {
   fields?: string[];
@@ -21,7 +21,7 @@ export default async function handler(
   const offset = parseInt(req.body.offset || 0);
   const limit = parseInt(req.body.limit || 20);
   try {
-    const { fields, data } = await getAllArchivedJobs(
+    const { fields, data } = await database.getAllArchivedJobs(
       offset,
       limit,
       state,

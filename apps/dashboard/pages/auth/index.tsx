@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import handler from '../api/jobs/[state]';
+import { useRouter } from 'next/router';
+import { useAuth } from '../../components/auth-provider';
 
 /* eslint-disable-next-line */
 export interface AuthProps {}
@@ -7,15 +8,15 @@ export interface AuthProps {}
 export default function Auth(props: AuthProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [submit, setSubmit] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { authenticated, setAuthenticated, setError } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      window.location.href = '/dashboard';
+    if (authenticated) {
+      router.push('/dashboard');
     }
-  }, [isAuthenticated]);
+  }, [authenticated]);
 
   useEffect(() => {
     const loginRequest = async () => {
@@ -27,24 +28,23 @@ export default function Auth(props: AuthProps) {
         },
         body: JSON.stringify({ username, password }),
       });
-      const { message } = await res.json();
       if (res.status === 200) {
-        setIsAuthenticated(true);
-        setPassword('');
-        setUsername('');
+        setAuthenticated(true);
         setSubmit(false);
       } else {
-        setError(message);
-        setIsAuthenticated(false);
+        setAuthenticated(false);
+        setSubmit(false);
+        setPassword('');
+        setUsername('');
+        setError({ message: res.statusText });
       }
     };
     if (submit) {
       loginRequest().catch((error) => {
-        setIsAuthenticated(false);
         console.error(error);
       });
     }
-  }, [username, password, submit]);
+  }, [submit]);
 
   const handleSubmit = () => {
     setSubmit(true);
@@ -85,6 +85,7 @@ export default function Auth(props: AuthProps) {
                     type="username"
                     autoComplete="username"
                     required
+                    value={username}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     onChange={handleUsername}
                   />
@@ -105,6 +106,7 @@ export default function Auth(props: AuthProps) {
                     type="password"
                     autoComplete="current-password"
                     required
+                    value={password}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     onChange={handlePassword}
                   />
@@ -114,8 +116,9 @@ export default function Auth(props: AuthProps) {
               <div className="mt-8">
                 <button
                   type="submit"
-                  className="w-full flex mt-8 justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="w-full flex mt-8 justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
                   onClick={handleSubmit}
+                  disabled={submit}
                 >
                   Sign in
                 </button>

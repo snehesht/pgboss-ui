@@ -1,19 +1,47 @@
+import './global.css';
+
 import { AppProps } from 'next/app';
 import Head from 'next/head';
-import './global.css';
-import { withPasswordProtect } from './_auth';
+import React from 'react';
+import { AuthGuard } from '../components/auth-guard';
+import { AuthProvider } from '../components/auth-provider';
 
-function CustomApp({ Component, pageProps }: AppProps) {
+function isAuthRequired(): boolean {
+  if (process.env.DISABLE_AUTH === 'true') {
+    return false;
+  }
+  return true;
+}
+
+export default function MyApp(props: AppProps) {
+  const { Component, pageProps }: AppProps = props;
+
   return (
     <>
       <Head>
-        <title>Welcome to dashboard!</title>
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width"
+          key="viewport"
+        />
+        <meta charSet="utf-8" />
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <title>PgBoss Dashboard</title>
+        <meta
+          name="description"
+          content="Dashboard for pg-boss"
+          key="description"
+        />
       </Head>
-      <main className="app">
-        <Component {...pageProps} />
-      </main>
+      <AuthProvider>
+        {isAuthRequired() ? (
+          <AuthGuard>
+            <Component {...pageProps} />
+          </AuthGuard>
+        ) : (
+          <Component {...pageProps} />
+        )}
+      </AuthProvider>
     </>
   );
 }
-
-export default withPasswordProtect(CustomApp);

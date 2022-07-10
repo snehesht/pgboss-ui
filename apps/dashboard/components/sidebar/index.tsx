@@ -9,6 +9,8 @@ import {
   CollectionIcon,
   XIcon,
 } from '@heroicons/react/outline';
+import { useRouter } from 'next/router';
+import Cookie from 'cookie-universal';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: ViewGridIcon, current: true },
@@ -36,19 +38,21 @@ export interface SidebarProps {
 export function Sidebar(props: SidebarProps) {
   const { sidebarOpen, setSidebarOpen } = props;
   const [currentPath, setCurrentPath] = useState('/dashboard');
+  const router = useRouter();
 
   useEffect(() => {
     setCurrentPath(window.location.pathname);
   }, []);
 
+  const handleLink = (href: string) => {
+    router.push(href);
+  };
+
   const handleLogout = () => {
-    fetch('/api/logout', {
-      method: 'POST',
-    }).then((response) => {
-      if (response.status === 200) {
-        window.location.href = '/dashboard';
-      }
-    });
+    event.preventDefault();
+    const cookie = Cookie();
+    cookie.remove('token');
+    router.push('/api/logout');
   };
 
   return (
@@ -56,7 +60,7 @@ export function Sidebar(props: SidebarProps) {
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <Dialog
           as="div"
-          className="relative z-40 md:hidden"
+          className="relative z-40 lg:hidden"
           onClose={setSidebarOpen}
         >
           <Transition.Child
@@ -116,6 +120,7 @@ export function Sidebar(props: SidebarProps) {
                       <a
                         key={item.name}
                         href={item.href}
+                        onClick={() => handleLink(item.href)}
                         className={classNames(
                           item.href === currentPath
                             ? 'bg-gray-100 text-indigo-500'
@@ -147,7 +152,7 @@ export function Sidebar(props: SidebarProps) {
       </Transition.Root>
 
       {/* Static sidebar for desktop */}
-      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+      <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
         {/* Sidebar component, swap this element with another sidebar if you like */}
         <div className="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
@@ -161,6 +166,7 @@ export function Sidebar(props: SidebarProps) {
                 <a
                   key={item.name}
                   href={item.href}
+                  onClick={() => handleLink(item.href)}
                   className={classNames(
                     item.href === currentPath
                       ? 'bg-indigo-50 text-indigo-500'
@@ -186,9 +192,10 @@ export function Sidebar(props: SidebarProps) {
             <span>Version {packageInfo.version}</span>
             <a
               className="text-gray-500 inline-flex items-center"
-              href="https://github.com/snehesht/pgbossui"
+              href="https://github.com/snehesht/pgboss-ui"
+              target="_blank"
             >
-              pgbossui
+              pgboss-ui
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 ml-1 text-gray-400"
